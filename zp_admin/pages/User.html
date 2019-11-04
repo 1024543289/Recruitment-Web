@@ -1,0 +1,368 @@
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_1431914_o2jhgajuvr.css">
+<!-- 内容开始 -->
+<div class="container-filed" style="background:#fff;height:100%;">
+	<div class="d-flex">
+		<!-- 添加用户按钮 -->
+		<div class="btn mt-2">
+			<button id="btn_add" class="btn text-white" style="background:#ff6600;"><i class="iconfont icon-hao"></i>添加用户</button>
+		</div>
+		<!-- 重置数据按钮 -->
+		<div class="btn mt-2 mr-3 offset-4">
+			<button id="resetData" class="btn btn-sm btn-secondary" onclick="relodeData()">重置</button>
+		</div>
+		<!-- 根据求职者ID查询用户 -->
+		<div class="form-group mt-3 mr-3">
+			<select name="search_JobhunterID" id="search_JobhunterID" class="form-control" style="width:75px;">
+				<option value="" style="display:none;">ID</option>
+			</select>
+		</div>
+		<!-- 根据用户名查询用户 -->
+		<div class="form-group mt-3 mr-3">
+			<select name="search_JobhunterUsername" id="search_JobhunterUsername" class="form-control" style="width:150px;">
+				<option value="" style="display:none;">用户名</option>
+			</select>
+		</div>
+		<!-- 根据学历查询用户 -->
+		<div class="form-group mt-3 mr-3">
+			<select name="search_JobhunterEducation" id="search_JobhunterEducation" class="form-control" style="width:100px;">
+				<option value="" style="display:none;">学历</option>
+			</select>
+		</div>
+		<!-- 根据性别查询用户 -->
+		<div class="form-group mt-3 mr-3">
+			<select name="search_JobhunterGender" id="search_JobhunterGender" class="form-control" style="width:85px;">
+				<option value="" style="display:none;">性别</option>
+			</select>
+		</div>
+	</div>
+	<!-- 表格开始 -->
+	<table id="User_tbl" class="table table-hover rounded-lg">
+		<thead class="text-center bg-dark text-white">
+			<tr>
+				<td style="width:50px;">#</td>
+				<td>用户名</td>
+				<td>姓名</td>
+				<td>性别</td>
+				<td>手机号</td>
+				<td>学历</td>
+				<td>出生日期</td>
+				<td>求职状态</td>
+				<td>操作</td>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</div>
+<script>
+	// 声明后台接口IP
+	var baseURL = "http://203.195.246.58:7777";
+	//点击添加商家按钮弹出模态框
+	$("#btn_add").click(function(){
+		$("#UserModal").modal("show");
+	})
+	//点击关闭和叉号隐藏模态框
+	function closeModal(){
+		$("#UserModal").modal("hide");
+	}
+	//初始化数据
+	function relodeData(){
+		var url = baseURL+"/Jobhunter/findAll";
+		$.get(url,function(result){
+			if(result.status === 200){
+				$("#User_tbl>tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr class="text-center">
+						<td><input type="checkbox" value="`+item.id+`" /></td>
+						<td name="username">`+item.username+`</td>
+						<td name="realname">`+item.realname+`</td>
+						<td name="gender">`+item.gender+`</td>
+						<td name="telephone">`+item.telephone+`</td>
+						<td name="education">`+item.education+`</td>
+						<td name="birth">`+item.birth+`</td>
+						<td name="currentStatus">`+item.currentStatus+`</td>
+						<td>
+							<a href="javascript:void(0)" onclick="delData.call(this)">删除</a>
+							<a href="javascript:void(0)" onclick="updData.call(this)">修改</a>
+							<a href="javascript:void(0)">详情</a>
+						</td>
+						</tr>`).appendTo("#User_tbl>tbody")
+				})
+			}
+		})
+	}
+	//删除招聘信息
+	function delData(){
+		var id = $(this).parents("tr").find("input").val();
+		var data = {id:id};
+		var url = baseURL+"/Jobhunter/deleteById";
+		$.post(url,data,function(result){
+			if(result.status === 200){
+				relodeData();
+				alert(result.message);
+			} else{
+				alert(result.message);
+			}
+		})
+	}
+	//保存或修改商家信息
+	function submitData(){
+	    //1.获取表单中商家的信息
+	    var id = $("#user_form input[name=id]").val();
+	    var username = $("#user_form input[name=username]").val();
+	    var password = $("#user_form input[name=password]").val();
+	    var realname = $("#user_form input[name=realname]").val();
+	    var gender = $("#user_form select[name=gender]").val();
+	    var birth = $("#user_form input[name=birth]").val();
+	    var education = $("#user_form select[name=education]").val();
+	    var workTime = $("#user_form input[name=workTime]").val();
+	    var telephone = $("#user_form input[name=telephone]").val();
+	    var resume = $("#user_form input[name=resume]").val();
+	    var currentStatus = $("#user_form select[name=currentStatus]").val();
+	    //2.与后台进行交互
+	    var url = baseURL+"/Jobhunter/saveOrUpdate";
+	    var data;
+	    if(id){
+	      data = {
+	        id:id,
+	        username:username,
+	        password:password,
+	        realname:realname,
+	        gender:gender,
+	        birth:birth,
+	        education:education,
+	        workTime:workTime,
+	        telephone:telephone,
+	        resume:resume,
+	        currentStatus:currentStatus
+	      }
+	    } else{
+	      data = {
+	        username:username,
+	        password:password,
+	        realname:realname,
+	        gender:gender,
+	        birth:birth,
+	        education:education,
+	        workTime:workTime,
+	        telephone:telephone,
+	        resume:resume,
+	        currentStatus:currentStatus
+	      }
+	    }
+	    $.post(url,data,function(result){
+	      if(result.status === 200){
+	        $("#UserModal").modal("hide");
+	        relodeData();
+	      } else{
+	        alert("接口异常");
+	      }
+	    })
+	  }
+	//点击修改按钮，打开模态框，并且将所在行信息传到输入框中
+	function updData(){
+		//1.获取当前行信息
+		var id = $(this).parents("tr").find("input").val();
+		var url = baseURL+"/Jobhunter/findById";
+		var data = {id:id};
+		$.get(url,data,function(result){
+			var item = result.data;
+			var id = item.id;
+			var username = item.username;
+			var password = item.password;
+			var realname = item.realname;
+			var gender = item.gender;
+			var birth = item.birth;
+			var education = item.education;
+			var workTime = item.workTime;
+			var telephone = item.telephone;
+			var resume = item.resume;
+			var currentStatus = item.currentStatus;
+			//将获取到的信息填入表单里
+			$("#user_form input[name=id]").val(id);
+			$("#user_form input[name=username]").val(username);
+			$("#user_form input[name=password]").val(password);
+			$("#user_form input[name=realname]").val(realname);
+			$("#user_form select[name=gender]").val(gender);
+			$("#user_form input[name=birth]").val(birth);
+			$("#user_form select[name=education]").val(education);
+			$("#user_form input[name=workTime]").val(workTime);
+			$("#user_form input[name=telephone]").val(telephone);
+			$("#user_form input[name=resume]").val(resume);
+			$("#user_form select[name=currentStatus]").val(currentStatus);
+		})
+		//点击修改按钮后，打开模态框
+		$("#UserModal").modal("show");
+	}
+	//查询所有求职者ID，放入搜索下拉框中----------------------------------------
+	function searchJobhunterID(){
+		var url = baseURL+"/Jobhunter/findAll";
+		$.get(url,function(result){
+			//清空下拉菜单中的数据
+			// $("#search_JobhunterID").empty();
+			//将遍历的商家ID，追加到下拉菜单中
+			result.data.forEach(function(item){
+				$("#search_JobhunterID").append(`<option value="`+item.id+`">`+item.id+`</option>`)
+			})
+		})
+	}
+	//查询所有用户名，放入搜索下拉框中----------------------------------------
+	function searchJobhunterUsername(){
+		var url = baseURL+"/Jobhunter/findAll";
+		$.get(url,function(result){
+			//清空下拉菜单中的数据
+			// $("#search_JobhunterUsername").empty();
+			//将遍历的商家ID，追加到下拉菜单中
+			result.data.forEach(function(item){
+				$("#search_JobhunterUsername").append(`<option value="`+item.username+`">`+item.username+`</option>`)
+			})
+		})
+	}
+	//查询所有求职者学历，放入搜索下拉框中----------------------------------------
+	function searchJobhunterEducation(){
+		var url = baseURL+"/Jobhunter/findAll";
+		$.get(url,function(result){
+			//清空下拉菜单中的数据
+			// $("#search_JobhunterEducation").empty();
+			//将遍历的商家ID，追加到下拉菜单中
+			result.data.forEach(function(item){
+				$("#search_JobhunterEducation").append(`<option value="`+item.education+`">`+item.education+`</option>`)
+			})
+		})
+	}
+	//查询所有求职者性别，放入搜索下拉框中----------------------------------------
+	function searchJobhunterGender(){
+		var url = baseURL+"/Jobhunter/findAll";
+		$.get(url,function(result){
+			//清空下拉菜单中的数据
+			// $("#search_JobhunterGender").empty();
+			//将遍历的商家ID，追加到下拉菜单中
+			result.data.forEach(function(item){
+				$("#search_JobhunterGender").append(`<option value="`+item.gender+`">`+item.gender+`</option>`)
+			})
+		})
+	}
+	//页面加载完毕后
+	$(function(){
+		relodeData();
+		//监听模态框关闭后初始化表单
+		$('#UserModal').on('hidden.bs.modal', function (e) {
+				$(this).find("form")[0].reset();
+				$("input[name=id]").val("");
+		})
+		//根据用户ID查找用户----------------------------------------------------
+		searchJobhunterID();
+		$("#search_JobhunterID").on('click','option',function(){
+			//把当前option的ID赋值给id
+			var id = $(this).val();
+			var url = baseURL+"/Jobhunter/findById";
+			var data = {id:id};
+			$.get(url,data,function(result){
+				//将原数据清空
+				$("#User_tbl>tbody").empty();
+				var item = result.data;
+				$(`<tr class="text-center">
+						<td><input type="checkbox" value="`+item.id+`" /></td>
+						<td name="username">`+item.username+`</td>
+						<td name="realname">`+item.realname+`</td>
+						<td name="gender">`+item.gender+`</td>
+						<td name="telephone">`+item.telephone+`</td>
+						<td name="education">`+item.education+`</td>
+						<td name="birth">`+item.birth+`</td>
+						<td name="currentStatus">`+item.currentStatus+`</td>
+						<td>
+							<a href="javascript:void(0)" onclick="delData.call(this)">删除</a>
+							<a href="javascript:void(0)" onclick="updData.call(this)">修改</a>
+							<a href="javascript:void(0)">详情</a>
+						</td>
+						</tr>`).appendTo("#User_tbl>tbody")
+			})
+		})
+		//根据用户名查找用户----------------------------------------------------------
+		searchJobhunterUsername();
+		$("#search_JobhunterUsername").on('click','option',function(){
+			//把当前option的ID赋值给id
+			var username = $(this).val();
+			var url = baseURL+"/Jobhunter/findByUsername";
+			var data = {username:username};
+			$.get(url,data,function(result){
+				//将原数据清空
+				$("#User_tbl>tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr class="text-center">
+						<td><input type="checkbox" value="`+item.id+`" /></td>
+						<td name="username">`+item.username+`</td>
+						<td name="realname">`+item.realname+`</td>
+						<td name="gender">`+item.gender+`</td>
+						<td name="telephone">`+item.telephone+`</td>
+						<td name="education">`+item.education+`</td>
+						<td name="birth">`+item.birth+`</td>
+						<td name="currentStatus">`+item.currentStatus+`</td>
+						<td>
+							<a href="javascript:void(0)" onclick="delData.call(this)">删除</a>
+							<a href="javascript:void(0)" onclick="updData.call(this)">修改</a>
+							<a href="javascript:void(0)">详情</a>
+						</td>
+						</tr>`).appendTo("#User_tbl>tbody")
+				})
+			})
+		})
+		//根据学历查找用户----------------------------------------------------------
+		searchJobhunterEducation();
+		$("#search_JobhunterEducation").on('click','option',function(){
+			//把当前option的ID赋值给id
+			var education = $(this).val();
+			var url = baseURL+"/Jobhunter/findByEducation";
+			var data = {education:education};
+			$.get(url,data,function(result){
+				//将原数据清空
+				$("#User_tbl>tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr class="text-center">
+						<td><input type="checkbox" value="`+item.id+`" /></td>
+						<td name="username">`+item.username+`</td>
+						<td name="realname">`+item.realname+`</td>
+						<td name="gender">`+item.gender+`</td>
+						<td name="telephone">`+item.telephone+`</td>
+						<td name="education">`+item.education+`</td>
+						<td name="birth">`+item.birth+`</td>
+						<td name="currentStatus">`+item.currentStatus+`</td>
+						<td>
+							<a href="javascript:void(0)" onclick="delData.call(this)">删除</a>
+							<a href="javascript:void(0)" onclick="updData.call(this)">修改</a>
+							<a href="javascript:void(0)">详情</a>
+						</td>
+						</tr>`).appendTo("#User_tbl>tbody")
+				})
+			})
+		})
+		//根据性别查找用户----------------------------------------------------------
+		searchJobhunterGender();
+		$("#search_JobhunterGender").on('click','option',function(){
+			//把当前option的ID赋值给id
+			var gender = $(this).val();
+			var url = baseURL+"/Jobhunter/findByGender";
+			var data = {gender:gender};
+			$.get(url,data,function(result){
+				//将原数据清空
+				$("#User_tbl>tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr class="text-center">
+						<td><input type="checkbox" value="`+item.id+`" /></td>
+						<td name="username">`+item.username+`</td>
+						<td name="realname">`+item.realname+`</td>
+						<td name="gender">`+item.gender+`</td>
+						<td name="telephone">`+item.telephone+`</td>
+						<td name="education">`+item.education+`</td>
+						<td name="birth">`+item.birth+`</td>
+						<td name="currentStatus">`+item.currentStatus+`</td>
+						<td>
+							<a href="javascript:void(0)" onclick="delData.call(this)">删除</a>
+							<a href="javascript:void(0)" onclick="updData.call(this)">修改</a>
+							<a href="javascript:void(0)">详情</a>
+						</td>
+						</tr>`).appendTo("#User_tbl>tbody")
+				})
+			})
+		})
+	})
+</script>
